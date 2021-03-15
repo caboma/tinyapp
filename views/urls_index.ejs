@@ -9,9 +9,7 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <nav class="navbar navbar-dark   bg-dark">
-		<a class="navbar-brand" href="index">Lighthouse Labs</a>
-	</nav>
+  <%- include('partials/_header') %>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
     <table class="table">
@@ -24,7 +22,7 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
-            <td><%= url %></td>
+            <td><a href="urls/<%= url %>"><%= url %></a></td>
             <td><%= urls[url] %></td>
           </tr>
         <% } %>
