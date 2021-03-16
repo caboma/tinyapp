@@ -34,7 +34,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL]
+  const templateVars = { shortURL, longURL};
+ console.log('2', longURL)
   res.render("urls_show", templateVars);
 });
 
@@ -43,16 +46,18 @@ function generateRandomString() {
 
   return shortID;
 }
-
+//Create new URL
 app.post("/urls", (req, res) => {
   const randomKey = generateRandomString();
-  urlDatabase[randomKey] = req.body.longURL ;
+  const longURL = `http://${req.body.longURL}`;
+  urlDatabase[randomKey] = longURL;
   res.redirect(`urls/${randomKey}`);         
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  console.log('3', longURL)
+  res.redirect(200, longURL);
 });
 
 app.listen(PORT, () => {
