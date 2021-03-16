@@ -7,7 +7,7 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "sm5xK": "http://www.google.com"
 };
-
+const morgan = require('morgan');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -37,7 +37,6 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]
   const templateVars = { shortURL, longURL};
- console.log('2', longURL)
   res.render("urls_show", templateVars);
 });
 
@@ -46,6 +45,7 @@ function generateRandomString() {
 
   return shortID;
 }
+
 //Create new URL
 app.post("/urls", (req, res) => {
   const randomKey = generateRandomString();
@@ -56,11 +56,18 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log('3', longURL)
   res.redirect(200, longURL);
 });
 
-app.listen(PORT, () => {
+//Delete URL
+app.post('/urls/:shortURL/delete', (req, res) => {
+  //const shortURL = req.params.shortURL;
+// delete the url from db
+  delete urlDatabase[req.params.shortURL];
+// redirect
+  res.redirect('/urls');
+})
 
+app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
