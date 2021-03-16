@@ -49,7 +49,7 @@ function generateRandomString() {
 //Create new URL
 app.post("/urls", (req, res) => {
   const randomKey = generateRandomString();
-  const longURL = `http://${req.body.longURL}`;
+  const longURL = `${req.body.longURL}`;
   urlDatabase[randomKey] = longURL;
   res.redirect(`urls/${randomKey}`);         
 });
@@ -59,14 +59,26 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(200, longURL);
 });
 
-//Delete URL
+//UPDATE URL
+app.post('/urls/:shortURL/', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = `${req.body.longURL}`;
+  // delete the url from db
+    urlDatabase[shortURL] = longURL;
+  // redirect
+    res.redirect('/urls');
+  })
+
+  //Delete URL
 app.post('/urls/:shortURL/delete', (req, res) => {
-  //const shortURL = req.params.shortURL;
+const shortURL = req.params.shortURL;
 // delete the url from db
-  delete urlDatabase[req.params.shortURL];
+  delete urlDatabase[shortURL];
 // redirect
   res.redirect('/urls');
 })
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
