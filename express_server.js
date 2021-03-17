@@ -18,6 +18,19 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "sm5xK": "http://www.google.com"
 };
+
+const userDb = { oc1224: {
+  "userId": "oc1224",
+  "userName": "Omar Cabatbat",
+  "email": "caboma@test.com",
+  "password": "test"
+}, oc0619: {
+  "userId": "oc1224",
+  "userName": "Omar Cabatbat",
+  "email": "caboma@test.com",
+  "password": "test"
+}};
+
 //root
 app.get("/", (req, res) => {
   const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
@@ -34,11 +47,23 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 //User Login
-app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
-})
+app.get("/login", (req, res) => {
+  const templateVars = { username: req.cookies['username'] };
+  res.render("login", templateVars);
+});
+
+//User Registration
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies['username'] };
+  res.render("register", templateVars);
+});
+
+// app.post('/login', (req, res) => {
+//   res.cookie('username', req.body.username);
+//   res.redirect('/urls');
+// })
 
 //User Logout, removes cookies
 app.post('/logout', (req, res) => {
