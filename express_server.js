@@ -39,6 +39,18 @@ function generateShortURL() {
 
   return shortID;
 }
+
+//returns the URLs where the userID is equal to the id of the currently logged-in user
+const urlsForUser = (id) => {
+  const filteredURL = {};
+  for (let shortURL in urlDatabase){
+    if(urlDatabase[shortURL].userID === id){
+      filteredURL[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return filteredURL;
+}
+
 // Check user if already exists in users Database using Email
 const findUserByEmail = (email) => {
   // loop and try to match the email
@@ -100,7 +112,7 @@ app.get("/", (req, res) => {
   const userInfo = req.cookies['userId']
   const templateVars = { urls: urlDatabase, user: userInfo };
 
-  res.render("urls_index", templateVars);
+  res.render("index", templateVars);
 });
 
 //show database content
@@ -139,7 +151,8 @@ app.get("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.cookies['userId'];
   const userInfo = users[user_id];
-  const templateVars = { urls: urlDatabase, user: userInfo};
+  const filteredURL = urlsForUser(user_id);
+  const templateVars = { urls: filteredURL, user: userInfo};
   res.render("urls_index", templateVars);
 });
 
@@ -160,9 +173,9 @@ app.get("/urls/new", (req, res) => {
 
 //show individual URL details
 app.get("/urls/:shortURL", (req, res) => {
+  const user_id = req.cookies['userId'];
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  const user_id = req.cookies['userId'];
   const userInfo = users[user_id];
   const templateVars = {shortURL, longURL, user: userInfo };
   res.render("urls_show", templateVars);
@@ -189,8 +202,6 @@ app.post("/urls", (req, res) => {
   const newURL = { longURL, userID}
   urlDatabase[randomKey] = newURL;
   res.redirect(`urls/${randomKey}`);      
-  
-
   
 });
 
@@ -255,7 +266,7 @@ app.post('/login', (req, res) => {
 //User Logout, removes cookies
 app.post('/logout', (req, res) => {
   res.clearCookie('userId');
-  res.redirect('/login');
+  res.redirect('/');
 })
 
 /* ---> END of Functionalities. All get POST functions */
