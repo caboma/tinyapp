@@ -197,9 +197,11 @@ app.post("/urls", (req, res) => {
 //UPDATE URL
 app.post('/urls/:shortURL/', (req, res) => {
   const shortURL = req.params.shortURL;
+  const userID = req.cookies['userId'];
   const longURL = req.body.longURL;
-  // delete the url from db
-    urlDatabase[shortURL] = longURL;
+  // update the url from db
+  const newURL = { longURL, userID}
+  urlDatabase[shortURL] = newURL;
   // redirect
     res.redirect('/urls');
   })
