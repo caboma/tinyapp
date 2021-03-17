@@ -10,18 +10,31 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username) { %>
+    <% if (user) { %>
       <form class="form-inline" method="POST" action="/logout">
         <div class="form-group mb-2">
-        <label style="width: 300px; margin: 1em" class="">Logged In as: <%= username %></label>
+        <label style="width: 300px; margin: 1em" class="">Logged In as: <%= user.email %></label>
         <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Logout</button>
       </div>
       </form>
     <% } else { %>
-      <form class="form-inline" method="POST" action="/login">
-        <input class="form-control mr-sm-2" type="search" placeholder="User Name" name="username">
-        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Login</button>
-      </form>
+      <table>
+        <tr>
+          <td>
+            <form class="form-inline" method="GET" action="/register">
+              <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Register</button>
+            </form>
+          </td>
+          <td>
+            <form class="form-inline" method="GET" action="/login">
+              <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Login</button>
+            </form>
+          </td>
+        </tr>
+      </table>
+
+      
+      
     <% } %>
   </nav>
 </header>
