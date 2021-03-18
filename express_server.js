@@ -13,6 +13,7 @@ const PORT = 8080; // default port 8080
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
+app.use(express.static('public'));
 
 const urlDatabase = { 
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "oc0619" },
@@ -109,9 +110,9 @@ const addNewUser = (userName, email, password) => {
 
 //render root page
 app.get("/", (req, res) => {
-  const userInfo = req.cookies['userId']
-  const templateVars = { urls: urlDatabase, user: userInfo };
-
+  const user_id = req.cookies['userId']
+  const userInfo = users[user_id];
+  const templateVars = { user: userInfo };
   res.render("index", templateVars);
 });
 
