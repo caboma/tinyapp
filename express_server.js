@@ -7,10 +7,8 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-// Testing only 
-if(process.argv[0] && process.argv[0] === "dev"){
-  
-}
+//requiring functions from helper module
+const { generateShortURL, findURL, findUserByEmail, authenticateUser, addNewUser } = require('./helpers');
 
 // Port number
 const PORT = 8080; // default port 8080
@@ -43,88 +41,6 @@ const users = { 'oc0619': {
   email: 'caboma@test.com',
   password: bcrypt.hashSync('test', saltRounds)
 }};
-
-/* ---> Start of Helper functions */
-
-//to generate new short URL
-function generateShortURL() {
-  const shortID = Math.random().toString(36).substring(2, 8);
-
-  return shortID;
-}
-
-//check url if already exist in the database
-const findURL = (url) => {
-  for (let shortURL in urlDatabase){
-    if(shortURL === url) {
-      return true;
-    }
-  }
-  return false;
-}
-
-//returns the URLs where the userID is equal to the id of the currently logged-in user
-const urlsForUser = (id) => {
-  const filteredURL = {};
-  for (let shortURL in urlDatabase){
-    if(urlDatabase[shortURL].userID === id){
-      filteredURL[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return filteredURL;
-}
-
-// Check user if already exists in users Database using Email
-const findUserByEmail = (email) => {
-  // loop and try to match the email
-  for (let userId in users) {
-    const userObj = users[userId];
-
-    if (userObj.email === email) {
-      // if found return the user
-      return userObj;
-    }
-  }
-  // if not found return false
-  return false;
-};
-
-//Authenticate users by matching email and password in users database to user input
-const authenticateUser = (email, password) => {
-  const userFound = findUserByEmail(email);
-  if (userFound && bcrypt.compareSync(password, userFound.password)) {
-    // user is authenticated
-    return userFound;
-  }
-  return false;
-};
-
-//Create random Id for the new user
-const createRandomId = () => {
-  const id = Math.random().toString(36).substring(2, 8);
-  return id;
-}
-
-//add new user obeject to users database
-const addNewUser = (userName, email, password) => {
-
-  // generate a random id
-  const userId = createRandomId();
-
-  const newUser = {
-    userId,
-    userName,
-    email,
-    password : bcrypt.hashSync(password, saltRounds),
-  };
-
-  // add the new user to users db
-  users[userId] = newUser;
-  return userId; // return the id => add it to cookie later
-}
-/* ---> End of Helper functions */
-
-
 
 /* ---> Start of Viewing Pages 
   Rendering of pages only. All get functions
@@ -174,7 +90,12 @@ app.get("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.session['userId'];
   const userInfo = users[user_id];
-  const filteredURL = urlsForUser(user_id);
+  const filteredURL = {};
+  for (let shortURL in urlDatabase){
+    if(urlDatabase[shortURL].userID === user_id){
+      filteredURL[shortURL] = urlDatabase[shortURL];
+    }
+  }
   const templateVars = { urls: filteredURL, user: userInfo};
   res.render("urls_index", templateVars);
 });
@@ -197,7 +118,7 @@ app.get("/urls/new", (req, res) => {
 //show individual URL details
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const foundURL = findURL(shortURL)
+  const foundURL = findURL(shortURL, urlDatabase)
 
   if(foundURL){
     const user_id = req.session['userId'];
@@ -293,10 +214,10 @@ app.post('/register', (req, res) => {
 
   // check if the user by email if does not already exists
 
-  const userFound = findUserByEmail(email);
+  const userFound = findUserByEmail(email, users, users);
 
   if (!userFound) {
-    const userId = addNewUser(username, email, password);
+    const userId = addNewUser(username, email, password, users);
     // setCookie
     req.session['userId'] = userId;
     res.redirect('/urls');
@@ -311,7 +232,7 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   
   // check if the email and password exists in the database
-  const userFound = authenticateUser(email, password);
+  const userFound = authenticateUser(email, password,users);
 
   if (userFound) {
     // setCookie
