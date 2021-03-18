@@ -36,12 +36,12 @@ const users = { 'oc0619': {
   userId: 'oc0619',
   userName: 'TM',
   email: 'tmtest@test.com',
-  password: '1234'
+  password: bcrypt.hashSync('1234', saltRounds)
 }, 'oc1224': {
   userId: 'oc1224',
   userName: 'Omar Cabatbat',
   email: 'caboma@test.com',
-  password: 'test'
+  password: bcrypt.hashSync('test', saltRounds)
 }};
 
 /* ---> Start of Helper functions */
@@ -51,6 +51,16 @@ function generateShortURL() {
   const shortID = Math.random().toString(36).substring(2, 8);
 
   return shortID;
+}
+
+//check url if already exist in the database
+const findURL = (url) => {
+  for (let shortURL in urlDatabase){
+    if(shortURL === url) {
+      return true;
+    }
+  }
+  return false;
 }
 
 //returns the URLs where the userID is equal to the id of the currently logged-in user
@@ -186,25 +196,38 @@ app.get("/urls/new", (req, res) => {
 
 //show individual URL details
 app.get("/urls/:shortURL", (req, res) => {
-  const user_id = req.session['userId'];
-  
-  if(user_id){
-    const shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
+  const foundURL = findURL(shortURL)
+
+  if(foundURL){
+    const user_id = req.session['userId'];
     const longURL = urlDatabase[shortURL].longURL;
-    const userInfo = users[user_id];
-    const templateVars = {shortURL, longURL, user: userInfo };
-    res.render("urls_show", templateVars);
+    const templateVars = {shortURL, longURL, user: users[user_id]};
+    const urlUserId = urlDatabase[shortURL].userID;
+
+    if(user_id === urlUserId){
+      res.render("urls_show", templateVars);
+    } else {
+      res.send('Warning: You do not have permission to access this url.');
+    }
+
   } else {
-    res.redirect('/urls');
+    res.send('Warning: The URL you are accessing cannot be found.');
   }
-  
 });
 
 //redirect to actual long URL website page 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  res.redirect(200, longURL);
+  const foundURL = findURL(shortURL)
+  
+  if(foundURL){
+    const longURL = urlDatabase[shortURL].longURL;
+    res.redirect(longURL)
+  }
+  else {
+    res.send('Warning: The URL you are accessing cannot be found.');
+  }
 });
 
 /* ---> End of Viewing Pages */
@@ -226,23 +249,41 @@ app.post("/urls", (req, res) => {
 
 //UPDATE URL
 app.post('/urls/:shortURL/', (req, res) => {
-  const shortURL = req.params.shortURL;
   const userID = req.session['userId'];
+  const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  // update the url from db
-  const newURL = { longURL, userID}
-  urlDatabase[shortURL] = newURL;
-  // redirect
+  const urlUserId = urlDatabase[shortURL].userID;
+  
+  //check if the logged in user id own the url
+  if(userID === urlUserId){
+    // update the url from db
+    const newURL = { longURL, userID }
+    urlDatabase[shortURL] = newURL;
+    // redirect
     res.redirect('/urls');
-  })
+  } else {
+    res.send('Warning: You do not have permission to update this url.');
+  }
+
+})
 
   //Delete URL
 app.post('/urls/:shortURL/delete', (req, res) => {
-const shortURL = req.params.shortURL;
-// delete the url from db
-  delete urlDatabase[shortURL];
-// redirect
-  res.redirect('/urls');
+  const userID = req.session['userId'];
+  const shortURL = req.params.shortURL;
+  const longURL = req.body.longURL;
+  const urlUserId = urlDatabase[shortURL].userID;
+
+  //check if the logged in user id own the url
+  if(userID === urlUserId){
+    // delete the url from db
+    delete urlDatabase[shortURL];
+    // redirect
+    res.redirect('/urls');
+  } else {
+    res.send('Warning: You do not have permission to delete this url.');
+  }
+
 })
 
 //User Registration
