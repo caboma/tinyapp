@@ -175,12 +175,13 @@ app.get("/urls/new", (req, res) => {
 //show individual URL details
 app.get("/urls/:shortURL", (req, res) => {
   const user_id = req.cookies['userId'];
+  
   if(user_id){
     const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  const userInfo = users[user_id];
-  const templateVars = {shortURL, longURL, user: userInfo };
-  res.render("urls_show", templateVars);
+    const longURL = urlDatabase[shortURL].longURL;
+    const userInfo = users[user_id];
+    const templateVars = {shortURL, longURL, user: userInfo };
+    res.render("urls_show", templateVars);
   } else {
     res.redirect('/urls');
   }
