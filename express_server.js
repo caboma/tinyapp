@@ -1,19 +1,31 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+const morgan = require('morgan');
+//const cookieParser = require('cookie-parser')
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 // Testing only 
 if(process.argv[0] && process.argv[0] === "dev"){
-  const morgan = require('morgan');
+  
 }
 
 // Port number
 const PORT = 8080; // default port 8080
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(express.static('public'));
+app.use(morgan('short'));
+app.use(bodyParser.urlencoded({extended: true}));
+//app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2'],
+  })
+);
 
 const urlDatabase = { 
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "oc0619" },
@@ -70,7 +82,7 @@ const findUserByEmail = (email) => {
 //Authenticate users by matching email and password in users database to user input
 const authenticateUser = (email, password) => {
   const userFound = findUserByEmail(email);
-  if (userFound && userFound.password === password) {
+  if (userFound && bcrypt.compareSync(password, userFound.password)) {
     // user is authenticated
     return userFound;
   }
@@ -93,7 +105,7 @@ const addNewUser = (userName, email, password) => {
     userId,
     userName,
     email,
-    password,
+    password : bcrypt.hashSync(password, saltRounds),
   };
 
   // add the new user to users db
@@ -110,7 +122,7 @@ const addNewUser = (userName, email, password) => {
 
 //render root page
 app.get("/", (req, res) => {
-  const user_id = req.cookies['userId']
+  const user_id = req.session['userId'];
   const userInfo = users[user_id];
   const templateVars = { user: userInfo };
   res.render("index", templateVars);
@@ -134,7 +146,7 @@ app.get("/hello", (req, res) => {
 
 // Render Registration page
 app.get("/register", (req, res) => {
-  const user_id = req.cookies['userId'];
+  const user_id = req.session['userId'];
   const userInfo = users[user_id];
   const templateVars = { user: userInfo };
   res.render("register", templateVars);
@@ -142,7 +154,7 @@ app.get("/register", (req, res) => {
 
 //Render User Login Page
 app.get("/login", (req, res) => {
-  const user_id = req.cookies['userId'];
+  const user_id = req.session['userId'];
   const userInfo = users[user_id];
   const templateVars = { user: userInfo };
   res.render("login", templateVars);
@@ -150,7 +162,7 @@ app.get("/login", (req, res) => {
 
 //list all URL in the database in a page
 app.get("/urls", (req, res) => {
-  const user_id = req.cookies['userId'];
+  const user_id = req.session['userId'];
   const userInfo = users[user_id];
   const filteredURL = urlsForUser(user_id);
   const templateVars = { urls: filteredURL, user: userInfo};
@@ -159,7 +171,7 @@ app.get("/urls", (req, res) => {
 
 //Render Create New URL Page
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies['userId'];
+  const user_id = req.session['userId'];
   const userInfo = users[user_id];
   const templateVars = { user: userInfo };
   
@@ -174,7 +186,7 @@ app.get("/urls/new", (req, res) => {
 
 //show individual URL details
 app.get("/urls/:shortURL", (req, res) => {
-  const user_id = req.cookies['userId'];
+  const user_id = req.session['userId'];
   
   if(user_id){
     const shortURL = req.params.shortURL;
@@ -205,7 +217,7 @@ app.post("/urls", (req, res) => {
   
   const randomKey = generateShortURL();
   const longURL = req.body.longURL;
-  const userID = req.cookies['userId'];
+  const userID = req.session['userId'];
   const newURL = { longURL, userID}
   urlDatabase[randomKey] = newURL;
   res.redirect(`urls/${randomKey}`);      
@@ -215,7 +227,7 @@ app.post("/urls", (req, res) => {
 //UPDATE URL
 app.post('/urls/:shortURL/', (req, res) => {
   const shortURL = req.params.shortURL;
-  const userID = req.cookies['userId'];
+  const userID = req.session['userId'];
   const longURL = req.body.longURL;
   // update the url from db
   const newURL = { longURL, userID}
@@ -245,7 +257,7 @@ app.post('/register', (req, res) => {
   if (!userFound) {
     const userId = addNewUser(username, email, password);
     // setCookie
-    res.cookie('userId', userId);
+    req.session['userId'] = userId;
     res.redirect('/urls');
   } else {
     res.status(404).send('The user already exists!');
@@ -262,7 +274,7 @@ app.post('/login', (req, res) => {
 
   if (userFound) {
     // setCookie
-    res.cookie('userId', userFound.userId);
+    req.session['userId'] = userFound.userId;
     res.redirect('/urls');
   } else {
     res.status(403).send('The user cannot be found!');
@@ -272,7 +284,7 @@ app.post('/login', (req, res) => {
 
 //User Logout, removes cookies
 app.post('/logout', (req, res) => {
-  res.clearCookie('userId');
+  req.session['userId'] = null;
   res.redirect('/');
 })
 
