@@ -7,17 +7,17 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-//requiring functions from helper module
-const { generateShortURL, findURL, findUserByEmail, authenticateUser, addNewUser } = require('./helpers');
-
 // Port number
 const PORT = 8080; // default port 8080
 
+//requiring functions from helper module
+const { generateShortURL, findURL, findUserByEmail, authenticateUser, addNewUser } = require('./helpers');
+
+// setting all required dependencies to be used by the app.
 app.set("view engine", "ejs");
 app.use(express.static('public'));
 app.use(morgan('short'));
 app.use(bodyParser.urlencoded({extended: true}));
-//app.use(cookieParser());
 app.use(
   cookieSession({
     name: 'session',
@@ -25,11 +25,13 @@ app.use(
   })
 );
 
+//-----URL Database---------
 const urlDatabase = { 
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "oc0619" },
   "sm5xK": { longURL: "http://www.google.com", userID: "oc1224"}
 };
 
+//-----Users Database------0
 const users = { 'oc0619': {
   userId: 'oc0619',
   userName: 'TM',
@@ -43,7 +45,7 @@ const users = { 'oc0619': {
 }};
 
 /* ---> Start of Viewing Pages 
-  Rendering of pages only. All get functions
+  Rendering of pages only. All GET functionality
 */
 
 //render root page
@@ -64,10 +66,6 @@ app.get("/urls.json", (req, res) => {
 app.get("/users.json", (req, res) => {
 
   res.json(users);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 // Render Registration page
@@ -135,6 +133,7 @@ app.get("/urls/:shortURL", (req, res) => {
   } else {
     res.render('error', { errorMsg: 'Warning: The URL cannot be found!', user: '' })
   }
+
 });
 
 //redirect to actual long URL website page 
@@ -153,7 +152,7 @@ app.get("/u/:shortURL", (req, res) => {
 /* ---> End of Viewing Pages */
 
 
-/* ---> Start of Functionalities. All get POST functions */
+/* ---> Start of Functionalities. All POST functionalities */
 
 //Create new URL
 app.post("/urls", (req, res) => {
@@ -223,6 +222,7 @@ app.post('/register', (req, res) => {
   } else {
     res.render('error', { errorMsg: 'Error (404): The user already exists!', user: '' })
   }
+
 });
 
 //User Login 
