@@ -22,7 +22,6 @@ const findURL = (url, urlDatabase) => {
 // Check user if already exists in users Database using Email
 const findUserByEmail = (email, userDb) => {
   // loop and try to match the email
-  console.log('finduserbyemail result', userDb)
   for (let userId in userDb) {
     const userObj = userDb[userId];
 
@@ -32,13 +31,11 @@ const findUserByEmail = (email, userDb) => {
     }
   }
   // if not found return false
-  return false;
+  return undefined;
 };
 
 //Authenticate users by matching email and password in users database to user input
 const authenticateUser = (email, password, userDb) => {
-  
-  console.log('authenticalteUser result: ', userDb)
   const userFound = findUserByEmail(email, userDb);
   if (userFound && bcrypt.compareSync(password, userFound.password)) {
     // user is authenticated
