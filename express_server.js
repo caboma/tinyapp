@@ -129,25 +129,24 @@ app.get("/urls/:shortURL", (req, res) => {
     if(user_id === urlUserId){
       res.render("urls_show", templateVars);
     } else {
-      res.send('Warning: You do not have permission to access this url.');
+      res.render('error', { errorMsg: 'Warning: You do not have access to access this URL. Please login.', user: users[user_id] })
     }
 
   } else {
-    res.send('Warning: The URL you are accessing cannot be found.');
+    res.render('error', { errorMsg: 'Warning: The URL cannot be found!', user: '' })
   }
 });
 
 //redirect to actual long URL website page 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const foundURL = findURL(shortURL)
-  
+  const foundURL = findURL(shortURL, urlDatabase)
   if(foundURL){
     const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL)
   }
   else {
-    res.send('Warning: The URL you are accessing cannot be found.');
+    res.render('error', { errorMsg: 'Warning: The URL cannot be found!', user: '' })
   }
 });
 
@@ -183,7 +182,7 @@ app.post('/urls/:shortURL/', (req, res) => {
     // redirect
     res.redirect('/urls');
   } else {
-    res.send('Warning: You do not have permission to update this url.');
+    res.render('error', { errorMsg: 'Warning: You do not have permission to update this url!', user: userID })
   }
 
 })
@@ -202,7 +201,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     // redirect
     res.redirect('/urls');
   } else {
-    res.send('Warning: You do not have permission to delete this url.');
+    res.render('error', { errorMsg: 'Warning: You do not have permission to delete this url!', user: '' })
   }
 
 })
@@ -222,7 +221,7 @@ app.post('/register', (req, res) => {
     req.session['userId'] = userId;
     res.redirect('/urls');
   } else {
-    res.status(404).send('The user already exists!');
+    res.render('error', { errorMsg: 'Error (404): The user already exists!', user: '' })
   }
 });
 
@@ -239,7 +238,7 @@ app.post('/login', (req, res) => {
     req.session['userId'] = userFound.userId;
     res.redirect('/urls');
   } else {
-    res.status(403).send('The user cannot be found!');
+    res.render('error', { errorMsg: 'Warning: User cannot be found!', user: '' })
   }
   
 });
