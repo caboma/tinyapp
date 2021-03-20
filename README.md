@@ -4,7 +4,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Screenshot of Index page"](https://github.com/caboma/tinyapp/blob/main/docs/index.png)
 !["Screenshot of Register page"](https://github.com/caboma/tinyapp/blob/main/docs/register.png)
 !["Screenshot of Login page"](https://github.com/caboma/tinyapp/blob/main/docs/login.png)
 !["Screenshot of URLS page"](https://github.com/caboma/tinyapp/blob/main/docs/urls.png)
