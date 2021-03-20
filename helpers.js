@@ -5,7 +5,6 @@ const saltRounds = 10;
 //to generate new short URL
 function generateShortURL() {
   const shortID = Math.random().toString(36).substring(2, 8);
-
   return shortID;
 }
 
@@ -26,7 +25,6 @@ const findUserByEmail = (email, userDb) => {
     const userObj = userDb[userId];
 
     if (userObj.email === email) {
-      // if found return the user
       return userObj;
     }
   }
@@ -37,6 +35,7 @@ const findUserByEmail = (email, userDb) => {
 //Authenticate users by matching email and password in users database to user input
 const authenticateUser = (email, password, userDb) => {
   const userFound = findUserByEmail(email, userDb);
+  
   if (userFound && bcrypt.compareSync(password, userFound.password)) {
     // user is authenticated
     return userFound;
