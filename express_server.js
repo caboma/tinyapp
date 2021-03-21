@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
-//const cookieParser = require('cookie-parser')
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -190,7 +189,6 @@ app.post('/urls/:shortURL/', (req, res) => {
       // update the url from db
       const newURL = { longURL, userID }
       urlDatabase[shortURL] = newURL;
-      // redirect
       res.redirect('/urls');
     } else {
       res.render('error', { 
@@ -217,7 +215,6 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     if(userID === urlUserId){
       // delete the url from db
       delete urlDatabase[shortURL];
-      // redirect
       res.redirect('/urls');
     } else {
       res.render('error', { 
@@ -235,6 +232,12 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/register', (req, res) => {
   // extract the info from the form with req.body
   const { username, email, password } = req.body;
+
+  if (username === '' || email === '' || password === '') {
+    res.render('error', { 
+      errorMsg: 'Warning: Either Name, Email or Password cannot be empty!', user: '' 
+    });
+  }
 
   // check if the user by email if does not already exists
   const userFound = findUserByEmail(email, users, users);
@@ -258,6 +261,12 @@ app.post('/login', (req, res) => {
   
   // check if the email and password exists in the database
   const userFound = authenticateUser(email, password,users);
+  
+  if (email === '' || password === '') {
+    res.render('error', { 
+      errorMsg: 'Warning: Either Email or Password cannot be empty!', user: '' 
+    });
+  }
 
   if (userFound) {
     // setCookie
